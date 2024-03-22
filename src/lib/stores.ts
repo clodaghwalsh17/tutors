@@ -19,7 +19,7 @@ export const onlineStatus = localStorageStore("onlineStatus", true);
 export const authenticating: Writable<boolean> = writable(false);
 
 export const studentsOnline = writable(0);
-export const studentsOnlineList = writable<LoEvent[]>([]);
+export const socialPresenceGroups = writable<LoEvent[][]>([[]]);
 
 export const coursesOnline = writable(0);
 export const coursesOnlineList = writable<LoEvent[]>([]);

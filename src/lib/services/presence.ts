@@ -1,7 +1,7 @@
 import PartySocket from "partysocket";
 import type { Course, Lo } from "./models/lo-types";
 import type { User } from "./types/auth";
-import { currentCourse, studentsOnline, studentsOnlineList, coursesOnline, coursesOnlineList, allStudentsOnlineList, allStudentsOnline } from "$lib/stores";
+import { currentCourse, studentsOnline, socialPresenceGroups, coursesOnline, coursesOnlineList, allStudentsOnlineList, allStudentsOnline } from "$lib/stores";
 import type { LoEvent, LoUser } from "./types/presence";
 import { getKeys } from "$lib/environment";
 import { PUBLIC_party_kit_main_room } from "$env/static/public";
@@ -66,13 +66,13 @@ export const presenceService = {
         if (this.currentUserId === nextLoEvent.user.id) return;
         let loEvent = this.studentEventMap.get(nextLoEvent.user.id);
         if (!loEvent) {
-          this.studentLos.push(nextLoEvent);
+          this.studentLos.push(nextLoEvent); 
           this.studentEventMap.set(nextLoEvent.user.id, nextLoEvent);
         } else {
           refreshLoEvent(loEvent, nextLoEvent);
         }
         this.studentLos = [...this.studentLos];
-        studentsOnlineList.set([...this.studentLos]);
+        socialPresenceGroups.set([...groupStudentsByLo(this.studentLos)]);
         studentsOnline.set(this.studentLos.length);
       } catch (e) {
         console.log(e);
@@ -164,4 +164,23 @@ function getTutorsTimeId() {
     window.localStorage.tutorsTimeId = generateTutorsTimeId();
   }
   return window.localStorage.tutorsTimeId;
+}
+
+function groupStudentsByLo(students: Array<LoEvent>): Array<Array<LoEvent>>{
+  students.sort((a, b) => a.title.localeCompare(b.title));
+
+  let groupedStudents:LoEvent[][] = [];
+  let temp:LoEvent[]= [students[0]];
+      
+  for(let i = 1; i < students.length; i++) {
+    if(students[i].title === students[i-1].title) {
+      temp.push(students[i]);
+    }        
+    else {
+      groupedStudents.push(temp)
+      temp = [students[i]];
+    }    
+  }
+  groupedStudents.push(temp);
+  return groupedStudents;
 }
